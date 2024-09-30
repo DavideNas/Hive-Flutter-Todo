@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'models/todo.dart';
 
 class HomePage extends StatefulWidget {
   final String title;
@@ -55,29 +55,30 @@ class _HomePageState extends State<HomePage> {
       valueListenable: _todosBox!.listenable(),
       builder: (context, box, widget) {
         final todosKeys = box.keys.toList();
+        // debugPrint("la lista ha → ${box.keys.length} elementi");
         //
         return SizedBox.expand(
           child: ListView.builder(
             itemCount: todosKeys.length,
             itemBuilder: (context, index) {
-              Map todo = _todosBox!.get(
+              Todo todo = _todosBox!.get(
                 todosKeys[index],
-              );
+              ) as Todo;
               return ListTile(
-                title: Text("${index.toString()} - ${todo["content"]}"),
-                subtitle: Text(todo["time"]),
+                title: Text("${index.toString()} - "), //${todo.content}"),
+                //subtitle: Text(todo.time),
                 onLongPress: () async {
                   await _todosBox!.delete(
                     todosKeys[index],
                   );
                 },
-                trailing: Checkbox(
-                  value: todo["isDone"],
-                  onChanged: (value) async {
-                    todo["isDone"] = value;
-                    await _todosBox!.put(todosKeys[index], todo);
-                  },
-                ),
+                // trailing: Checkbox(
+                //   value: todo["isDone"],
+                //   onChanged: (value) async {
+                //     todo["isDone"] = value;
+                //     await _todosBox!.put(todosKeys[index], todo);
+                //   },
+                // ),
               );
             },
           ),
@@ -103,11 +104,13 @@ class _HomePageState extends State<HomePage> {
               textColor: Colors.white,
               child: const Text('OK'),
               onPressed: () {
-                _todosBox?.add({
-                  "content": _textEditingController.text,
-                  "time": DateTime.now().toIso8601String(),
-                  "isDone": false,
-                });
+                int? index = _todosBox?.length;
+                (index != null) ? index : 0;
+                _todosBox?.put(
+                  index,
+                  Todo(_textEditingController.text, DateTime.now().toIso8601String(), false),
+                );
+                debugPrint("new length of list box is → ${_todosBox?.length}");
                 Navigator.pop(context);
                 _textEditingController.clear();
               },
